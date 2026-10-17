@@ -167,13 +167,14 @@ static GLFWbool openJoystickDevice(const char* path)
 
     if (ioctl(linjs.fd, EVIOCGNAME(sizeof(name)), name) < 0)
         strncpy(name, "Unknown", sizeof(name));
+    name[sizeof(name) - 1] = '\0';
 
     char guid[33] = "";
 
     // Generate a joystick GUID that matches the SDL 2.0.5+ one
     if (id.vendor && id.product && id.version)
     {
-        sprintf(guid, "%02x%02x0000%02x%02x0000%02x%02x0000%02x%02x0000",
+        snprintf(guid, sizeof(guid), "%02x%02x0000%02x%02x0000%02x%02x0000%02x%02x0000",
                 id.bustype & 0xff, id.bustype >> 8,
                 id.vendor & 0xff,  id.vendor >> 8,
                 id.product & 0xff, id.product >> 8,
@@ -181,11 +182,11 @@ static GLFWbool openJoystickDevice(const char* path)
     }
     else
     {
-        sprintf(guid, "%02x%02x0000%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x00",
+        snprintf(guid, sizeof(guid), "%02x%02x0000%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x00",
                 id.bustype & 0xff, id.bustype >> 8,
-                name[0], name[1], name[2], name[3],
-                name[4], name[5], name[6], name[7],
-                name[8], name[9], name[10]);
+                (unsigned char) name[0], (unsigned char) name[1], (unsigned char) name[2], (unsigned char) name[3],
+                (unsigned char) name[4], (unsigned char) name[5], (unsigned char) name[6], (unsigned char) name[7],
+                (unsigned char) name[8], (unsigned char) name[9], (unsigned char) name[10]);
     }
 
     int axisCount = 0, buttonCount = 0, hatCount = 0;

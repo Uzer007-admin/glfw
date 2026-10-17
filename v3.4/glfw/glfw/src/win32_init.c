@@ -704,6 +704,9 @@ int _glfwInitWin32(void)
 
 void _glfwTerminateWin32(void)
 {
+    if (_glfw.win32.eventTimer)
+        CloseHandle(_glfw.win32.eventTimer);
+
     if (_glfw.win32.blankCursor)
         DestroyIcon((HICON) _glfw.win32.blankCursor);
 

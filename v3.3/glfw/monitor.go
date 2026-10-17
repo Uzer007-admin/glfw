@@ -2,9 +2,11 @@ package glfw
 
 //#define GLFW_INCLUDE_NONE
 //#include "glfw/include/GLFW/glfw3.h"
+//#include "native_array.h"
 //GLFWmonitor* GetMonitorAtIndex(GLFWmonitor **monitors, int index);
 //GLFWvidmode GetVidmodeAtIndex(GLFWvidmode *vidmodes, int index);
 //void glfwSetMonitorCallbackCB();
+//void glfwSetGammaRampBridge(GLFWmonitor *monitor, unsigned short *red, unsigned short *green, unsigned short *blue, unsigned int size);
 //unsigned int GetGammaAtIndex(unsigned short *color, int i);
 //void SetGammaAtIndex(unsigned short *color, int i, unsigned short value);
 import "C"
@@ -54,18 +56,18 @@ func goMonitorCB(monitor unsafe.Pointer, event C.int) {
 
 // GetMonitors returns a slice of handles for all currently connected monitors.
 func GetMonitors() []*Monitor {
-	var length int
-
-	mC := C.glfwGetMonitors((*C.int)(unsafe.Pointer(&length)))
+	result := C.glfwGetMonitorsBridge()
+	mC, length := result.data, int(result.count)
 	panicError()
 	if mC == nil {
 		return nil
 	}
 
-	m := make([]*Monitor, length)
-
-	for i := 0; i < length; i++ {
-		m[i] = &Monitor{C.GetMonitorAtIndex(mC, C.int(i))}
+	m := make([]*Monitor, int(length))
+	handles := make([]Monitor, int(length))
+	for i, handle := range unsafe.Slice(mC, int(length)) {
+		handles[i].data = handle
+		m[i] = &handles[i]
 	}
 
 	return m
@@ -189,21 +191,19 @@ func SetMonitorCallback(cbfun MonitorCallback) MonitorCallback {
 // (the sum of all channel depths) and then by resolution area (the product of
 // width and height).
 func (m *Monitor) GetVideoModes() []*VidMode {
-	var length int
-
-	vC := C.glfwGetVideoModes(m.data, (*C.int)(unsafe.Pointer(&length)))
+	result := C.glfwGetVideoModesBridge(m.data)
+	vC, length := result.data, int(result.count)
 	panicError()
 	if vC == nil {
 		return nil
 	}
 
-	v := make([]*VidMode, length)
-
-	for i := 0; i < length; i++ {
-		t := C.GetVidmodeAtIndex(vC, C.int(i))
-		v[i] = &VidMode{int(t.width), int(t.height), int(t.redBits), int(t.greenBits), int(t.blueBits), int(t.refreshRate)}
+	v := make([]*VidMode, int(length))
+	modes := make([]VidMode, int(length))
+	for i, mode := range unsafe.Slice(vC, int(length)) {
+		modes[i] = VidMode{int(mode.width), int(mode.height), int(mode.redBits), int(mode.greenBits), int(mode.blueBits), int(mode.refreshRate)}
+		v[i] = &modes[i]
 	}
-
 	return v
 }
 
@@ -228,7 +228,13 @@ func (m *Monitor) SetGamma(gamma float32) {
 
 // GetGammaRamp retrieves the current gamma ramp of the monitor.
 func (m *Monitor) GetGammaRamp() *GammaRamp {
-	var ramp GammaRamp
+	return m.GetGammaRampInto(nil)
+}
+
+// GetGammaRampInto copies the current gamma ramp into dst, reusing its channel
+// buffers when possible. Use independent channel buffers. The result owns its
+// data, and is nil when no ramp is available. Call only from the main thread.
+func (m *Monitor) GetGammaRampInto(dst *GammaRamp) *GammaRamp {
 
 	rampC := C.glfwGetGammaRamp(m.data)
 	panicError()
@@ -236,32 +242,28 @@ func (m *Monitor) GetGammaRamp() *GammaRamp {
 		return nil
 	}
 
-	length := int(rampC.size)
-	ramp.Red = make([]uint16, length)
-	ramp.Green = make([]uint16, length)
-	ramp.Blue = make([]uint16, length)
-
-	for i := 0; i < length; i++ {
-		ramp.Red[i] = uint16(C.GetGammaAtIndex(rampC.red, C.int(i)))
-		ramp.Green[i] = uint16(C.GetGammaAtIndex(rampC.green, C.int(i)))
-		ramp.Blue[i] = uint16(C.GetGammaAtIndex(rampC.blue, C.int(i)))
+	if dst == nil {
+		dst = new(GammaRamp)
 	}
-
-	return &ramp
+	length := int(rampC.size)
+	dst.Red = copyNativeSlice[uint16](dst.Red, unsafe.Pointer(rampC.red), length)
+	dst.Green = copyNativeSlice[uint16](dst.Green, unsafe.Pointer(rampC.green), length)
+	dst.Blue = copyNativeSlice[uint16](dst.Blue, unsafe.Pointer(rampC.blue), length)
+	return dst
 }
 
 // SetGammaRamp sets the current gamma ramp for the monitor.
+// The channels must have equal, nonzero lengths or this function panics.
+// GLFW copies the channel data before returning. Call only from the main thread.
 func (m *Monitor) SetGammaRamp(ramp *GammaRamp) {
-	var rampC C.GLFWgammaramp
-
-	length := len(ramp.Red)
-
-	for i := 0; i < length; i++ {
-		C.SetGammaAtIndex(rampC.red, C.int(i), C.ushort(ramp.Red[i]))
-		C.SetGammaAtIndex(rampC.green, C.int(i), C.ushort(ramp.Green[i]))
-		C.SetGammaAtIndex(rampC.blue, C.int(i), C.ushort(ramp.Blue[i]))
-	}
-
-	C.glfwSetGammaRamp(m.data, &rampC)
+	length := validateGammaRamp(ramp)
+	// GLFW synchronously copies these pointer-free Go buffers. The temporary
+	// GLFWgammaramp is constructed on the C stack, not in Go memory.
+	C.glfwSetGammaRampBridge(m.data,
+		(*C.ushort)(unsafe.Pointer(unsafe.SliceData(ramp.Red))),
+		(*C.ushort)(unsafe.Pointer(unsafe.SliceData(ramp.Green))),
+		(*C.ushort)(unsafe.Pointer(unsafe.SliceData(ramp.Blue))),
+		C.uint(length),
+	)
 	panicError()
 }

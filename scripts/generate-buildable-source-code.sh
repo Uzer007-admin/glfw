@@ -115,4 +115,4 @@ GLFW_DIR="$TARGET_DIR/glfw/glfw"
 rm -rf "$GLFW_DIR"
 mv "$AGGREGATE_DIR" "$GLFW_DIR"
 
-generate_dummy_go_files "$GLFW_DIR" "github.com/go-gl/glfw/$TARGET_DIR/glfw/glfw/deps"
+generate_dummy_go_files "$GLFW_DIR" "github.com/Uzer007-admin/glfw/$TARGET_DIR/glfw/glfw/deps"

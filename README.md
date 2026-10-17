@@ -1,8 +1,53 @@
+# glfw: библиотека проекта Granio
+
+**Исходный репозиторий:** [go-gl/glfw](https://github.com/go-gl/glfw).
+**Цель форка:** Окна и ввод для Granio: GLFW 3.5.1, X11/Wayland, прозрачность, системное размытие и диагностика выбранного backend.
+
+Репозиторий развивается самостоятельно. Исходная история, лицензия и авторство
+сохранены. Минимальная версия Go — **1.27.1**. Собственный адрес модуля:
+`github.com/Uzer007-admin/glfw`
+; для GLFW используются вложенные модули `v3.3/glfw`, `v3.4/glfw` и `v3.5/glfw`.
+
+Платформенные ограничения и результаты проверок:
+[развитие графического стека](https://github.com/Uzer007-admin/granio/blob/dev/granio/docs/NATIVE_STACK_IMPLEMENTATION.md).
+Длительные проверки производительности в этот этап не входят.
+
+---
+
+## Документация исходного проекта и прежних этапов
+
+Адреса установки в сохранённых примерах ниже могут относиться к исходнику.
+
 [![Tests](https://github.com/go-gl/glfw/actions/workflows/tests.yml/badge.svg)](https://github.com/go-gl/glfw/actions/workflows/tests.yml)
 [![Static Analysis](https://github.com/go-gl/glfw/actions/workflows/analysis.yml/badge.svg)](https://github.com/go-gl/glfw/actions/workflows/analysis.yml)
-[![GoDoc](https://godoc.org/github.com/go-gl/glfw/v3.4/glfw?status.svg)](https://godoc.org/github.com/go-gl/glfw/v3.4/glfw)
+[![GoDoc](https://godoc.org/github.com/go-gl/glfw/v3.5/glfw?status.svg)](https://godoc.org/github.com/go-gl/glfw/v3.5/glfw)
 
-# GLFW 3.4 for Go
+# GLFW 3.5.1 for Go (local fork)
+
+The `v3.3` and `v3.4` modules remain available. `v3.5/glfw` wraps native GLFW 3.5.1, commit `d9d6f0f1f967807ffade6598ea9a631ebaf37a56`, and adds `UnlimitedMouseButtons`. This module has no published upstream version; use the local workspace or a `replace` directive.
+
+All three modules add `GetAxesInto`, `GetButtonsInto`, `GetHatsInto`,
+`GetGamepadStateInto` and `GetGammaRampInto` for caller-owned reusable buffers.
+Returned data is copied from GLFW storage; individual elements no longer require
+cgo calls. Monitor/video-mode wrappers share a Go backing allocation.
+
+`SetGammaRamp` validates equal, nonzero channel lengths and passes them through a
+C-stack bridge. GLFW copies their data before returning. Six native getters also
+return their count/state by value through C-stack bridges, removing hidden Go
+output-buffer allocations while preserving callbacks. The main-thread rules still apply.
+
+`Window.GetSurfaceMetrics` returns window and framebuffer dimensions, independent
+content scales, focus/visibility/minimization/maximization and framebuffer alpha
+availability in one cgo call with no Go output allocations. `PixelScale` computes
+framebuffer density without treating it as UI scaling; zero geometry is invalid.
+The native queries are sequential, do not pump events and must run on the main
+thread. Framebuffer alpha availability does not establish OS backdrop support.
+
+`Window.GetSurfaceGeometry` is a smaller three-query snapshot available in all
+three modules. It returns sizes and independent content scales in one cgo call,
+without querying focus, visibility or transparency and without Go output
+allocations. Prefer collecting it after sizing/scale events and reusing it in
+rendering; native geometry queries can still require X11 server round trips.
 
 ## Installation
 
@@ -14,10 +59,11 @@
 	* On NetBSD, to build for X, you need the X11 sets installed. These are included in all graphical installs, and can be added to the system with `sysinst(8)` on non-graphical systems. Wayland support is incomplete, due to missing wscons support in upstream GLFW. To attempt to build for Wayland, you need to install the `wayland libepoll-shim` packages and set the environment variable `PKG_CONFIG_PATH=/usr/pkg/libdata/pkgconfig`.
 	* On OpenBSD, you need the X11 sets. These are installed by default, and can be added from the ramdisk kernel at any time.
 	* See [here](http://www.glfw.org/docs/latest/compile.html#compile_deps) for full details.
-* Go 1.4+ is required on Windows (otherwise you must use MinGW v4.8.1 exactly, see [Go issue 8811](https://github.com/golang/go/issues/8811)).
+* This local fork requires Go 1.27.1 or newer and a platform C compiler.
 
 ```
-go get github.com/go-gl/glfw/v3.4/glfw
+go mod edit -require=github.com/go-gl/glfw/v3.5/glfw@v0.0.0
+go mod edit -replace=github.com/go-gl/glfw/v3.5/glfw=./deps/glfw/v3.5/glfw
 ```
 
 ### OpenGL ES
@@ -26,7 +72,7 @@ If your target system only provides an OpenGL ES implementation (true for some A
 You do this by defining the appropriate build tags, e.g.
 
 ```
-go get -tags=gles2 github.com/go-gl/glfw/v3.4/glfw
+go get -tags=gles2 github.com/go-gl/glfw/v3.5/glfw
 ```
 
 Supported tags are `gles1`, `gles2`, `gles3` and `vulkan`.
@@ -39,7 +85,7 @@ package main
 
 import (
 	"runtime"
-	"github.com/go-gl/glfw/v3.4/glfw"
+	"github.com/go-gl/glfw/v3.5/glfw"
 )
 
 func init() {

@@ -10,13 +10,13 @@ jobs:
       fail-fast: false
       matrix:
         go-version: ['', 'stable']
-        module-dir: ['v3.3/glfw', 'v3.4/glfw']
+        module-dir: ['v3.3/glfw', 'v3.4/glfw', 'v3.5/glfw']
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v7.0.1
       with:
         persist-credentials: false
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@v7.0.0
       with:
         go-version: ${{ matrix.go-version }}
         go-version-file: ${{ matrix.module-dir }}/go.mod

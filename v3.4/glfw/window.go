@@ -406,8 +406,12 @@ func CreateWindow(width, height int, title string, monitor *Monitor, share *Wind
 //
 // This function may only be called from the main thread.
 func (w *Window) Destroy() {
+	if w.data == nil {
+		return
+	}
 	windows.remove(w.data)
 	C.glfwDestroyWindow(w.data)
+	w.data = nil
 	panicError()
 }
 

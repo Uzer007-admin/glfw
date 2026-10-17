@@ -123,7 +123,7 @@ static void matchCallback(void* context,
                           IOHIDDeviceRef device)
 {
     int jid;
-    char name[256];
+    char name[256] = "";
     char guid[33];
     CFIndex i;
     CFTypeRef property;
@@ -175,17 +175,17 @@ static void matchCallback(void* context,
     // Generate a joystick GUID that matches the SDL 2.0.5+ one
     if (vendor && product)
     {
-        sprintf(guid, "03000000%02x%02x0000%02x%02x0000%02x%02x0000",
+        snprintf(guid, sizeof(guid), "03000000%02x%02x0000%02x%02x0000%02x%02x0000",
                 (uint8_t) vendor, (uint8_t) (vendor >> 8),
                 (uint8_t) product, (uint8_t) (product >> 8),
                 (uint8_t) version, (uint8_t) (version >> 8));
     }
     else
     {
-        sprintf(guid, "05000000%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x00",
-                name[0], name[1], name[2], name[3],
-                name[4], name[5], name[6], name[7],
-                name[8], name[9], name[10]);
+        snprintf(guid, sizeof(guid), "05000000%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x00",
+                (unsigned char) name[0], (unsigned char) name[1], (unsigned char) name[2], (unsigned char) name[3],
+                (unsigned char) name[4], (unsigned char) name[5], (unsigned char) name[6], (unsigned char) name[7],
+                (unsigned char) name[8], (unsigned char) name[9], (unsigned char) name[10]);
     }
 
     for (i = 0;  i < CFArrayGetCount(elements);  i++)
@@ -486,7 +486,7 @@ void _glfwPlatformUpdateGamepadGUID(char* guid)
     {
         char original[33];
         strncpy(original, guid, sizeof(original) - 1);
-        sprintf(guid, "03000000%.4s0000%.4s000000000000",
+        snprintf(guid, 33, "03000000%.4s0000%.4s000000000000",
                 original, original + 16);
     }
 }

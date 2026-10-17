@@ -441,6 +441,7 @@ typedef struct _GLFWlibraryWin32
 {
     HINSTANCE           instance;
     HWND                helperWindowHandle;
+    HANDLE              eventTimer;
     ATOM                helperWindowClass;
     ATOM                mainWindowClass;
     HDEVNOTIFY          deviceNotificationHandle;

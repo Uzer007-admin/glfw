@@ -210,7 +210,7 @@ static GLFWbool supportsXInput(const GUID* guid)
     for (i = 0;  i < count;  i++)
     {
         RID_DEVICE_INFO rdi;
-        char name[256];
+        char name[256] = "";
         UINT size;
 
         if (ridl[i].dwType != RIM_TYPEHID)
@@ -352,7 +352,7 @@ static BOOL CALLBACK deviceCallback(const DIDEVICEINSTANCE* di, void* user)
     _GLFWobjenumWin32 data;
     _GLFWjoystick* js;
     char guid[33];
-    char name[256];
+    char name[256] = "";
 
     for (jid = 0;  jid <= GLFW_JOYSTICK_LAST;  jid++)
     {
@@ -452,7 +452,7 @@ static BOOL CALLBACK deviceCallback(const DIDEVICEINSTANCE* di, void* user)
     // Generate a joystick GUID that matches the SDL 2.0.5+ one
     if (memcmp(&di->guidProduct.Data4[2], "PIDVID", 6) == 0)
     {
-        sprintf(guid, "03000000%02x%02x0000%02x%02x000000000000",
+        snprintf(guid, sizeof(guid), "03000000%02x%02x0000%02x%02x000000000000",
                 (uint8_t) di->guidProduct.Data1,
                 (uint8_t) (di->guidProduct.Data1 >> 8),
                 (uint8_t) (di->guidProduct.Data1 >> 16),
@@ -460,10 +460,10 @@ static BOOL CALLBACK deviceCallback(const DIDEVICEINSTANCE* di, void* user)
     }
     else
     {
-        sprintf(guid, "05000000%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x00",
-                name[0], name[1], name[2], name[3],
-                name[4], name[5], name[6], name[7],
-                name[8], name[9], name[10]);
+        snprintf(guid, sizeof(guid), "05000000%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x00",
+                (unsigned char) name[0], (unsigned char) name[1], (unsigned char) name[2], (unsigned char) name[3],
+                (unsigned char) name[4], (unsigned char) name[5], (unsigned char) name[6], (unsigned char) name[7],
+                (unsigned char) name[8], (unsigned char) name[9], (unsigned char) name[10]);
     }
 
     js = _glfwAllocJoystick(name, guid,
@@ -523,7 +523,7 @@ void _glfwDetectJoystickConnectionWin32(void)
                 continue;
 
             // Generate a joystick GUID that matches the SDL 2.0.5+ one
-            sprintf(guid, "78696e707574%02x000000000000000000",
+            snprintf(guid, sizeof(guid), "78696e707574%02x000000000000000000",
                     xic.SubType & 0xff);
 
             js = _glfwAllocJoystick(getDeviceDescription(&xic), guid, 6, 10, 1);
@@ -758,7 +758,7 @@ void _glfwUpdateGamepadGUIDWin32(char* guid)
     {
         char original[33];
         strncpy(original, guid, sizeof(original) - 1);
-        sprintf(guid, "03000000%.4s0000%.4s000000000000",
+        snprintf(guid, 33, "03000000%.4s0000%.4s000000000000",
                 original, original + 4);
     }
 }

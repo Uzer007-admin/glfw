@@ -17,3 +17,14 @@ unsigned int GetGammaAtIndex(unsigned short *color, int i) { return color[i]; }
 void SetGammaAtIndex(unsigned short *color, int i, unsigned short value) {
   color[i] = value;
 }
+
+void glfwSetGammaRampBridge(GLFWmonitor *monitor, unsigned short *red,
+                            unsigned short *green, unsigned short *blue,
+                            unsigned int size) {
+  GLFWgammaramp ramp;
+  ramp.red = red;
+  ramp.green = green;
+  ramp.blue = blue;
+  ramp.size = size;
+  glfwSetGammaRamp(monitor, &ramp);
+}

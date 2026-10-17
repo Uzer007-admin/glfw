@@ -1,3 +1,3 @@
-module github.com/go-gl/glfw/v3.4/glfw
+module github.com/Uzer007-admin/glfw/v3.4/glfw
 
-go 1.19
+go 1.27.1

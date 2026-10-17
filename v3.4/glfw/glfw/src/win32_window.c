@@ -2190,7 +2190,34 @@ void _glfwWaitEventsWin32(void)
 
 void _glfwWaitEventsTimeoutWin32(double timeout)
 {
-    MsgWaitForMultipleObjects(0, NULL, FALSE, (DWORD) (timeout * 1e3), QS_ALLINPUT);
+#ifndef FYNE_HIGH_RESOLUTION_EVENT_WAIT
+#define FYNE_HIGH_RESOLUTION_EVENT_WAIT 1
+#endif
+#if FYNE_HIGH_RESOLUTION_EVENT_WAIT
+    // Sub-millisecond frame deadlines must not become a zero-time busy poll.
+    // This private auto-reset timer leaves the process-wide timer resolution alone.
+    if (!_glfw.win32.eventTimer)
+        _glfw.win32.eventTimer = CreateWaitableTimerExW(NULL, NULL, 0x00000002, TIMER_ALL_ACCESS);
+
+    if (_glfw.win32.eventTimer)
+    {
+        LARGE_INTEGER dueTime;
+        dueTime.QuadPart = -(LONGLONG) (timeout * 1e7);
+        if (dueTime.QuadPart == 0)
+            dueTime.QuadPart = -1;
+        if (SetWaitableTimer(_glfw.win32.eventTimer, &dueTime, 0, NULL, NULL, FALSE))
+        {
+            MsgWaitForMultipleObjects(1, &_glfw.win32.eventTimer, FALSE, INFINITE, QS_ALLINPUT);
+            CancelWaitableTimer(_glfw.win32.eventTimer);
+        }
+        else
+            MsgWaitForMultipleObjects(0, NULL, FALSE, (DWORD) ceil(timeout * 1e3), QS_ALLINPUT);
+    }
+    else
+        MsgWaitForMultipleObjects(0, NULL, FALSE, (DWORD) ceil(timeout * 1e3), QS_ALLINPUT);
+#else
+    MsgWaitForMultipleObjects(0, NULL, FALSE, (DWORD) ceil(timeout * 1e3), QS_ALLINPUT);
+#endif
 
     _glfwPollEventsWin32();
 }

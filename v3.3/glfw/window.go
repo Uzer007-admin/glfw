@@ -79,6 +79,7 @@ const (
 // Context related hints.
 const (
 	ClientAPI               Hint = C.GLFW_CLIENT_API               // Specifies which client API to create the context for. Hard constraint.
+	ContextNoError          Hint = C.GLFW_CONTEXT_NO_ERROR         // Request a context without error reporting.
 	ContextVersionMajor     Hint = C.GLFW_CONTEXT_VERSION_MAJOR    // Specifies the client API version that the created context must be compatible with.
 	ContextVersionMinor     Hint = C.GLFW_CONTEXT_VERSION_MINOR    // Specifies the client API version that the created context must be compatible with.
 	ContextRobustness       Hint = C.GLFW_CONTEXT_ROBUSTNESS       // Specifies the robustness strategy to be used by the context.
@@ -359,8 +360,12 @@ func CreateWindow(width, height int, title string, monitor *Monitor, share *Wind
 //
 // This function may only be called from the main thread.
 func (w *Window) Destroy() {
+	if w.data == nil {
+		return
+	}
 	windows.remove(w.data)
 	C.glfwDestroyWindow(w.data)
+	w.data = nil
 	panicError()
 }
 

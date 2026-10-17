@@ -9,4 +9,4 @@ package glfw
 // inputs.
 //
 //lint:ignore U1000 ^
-const upstreamTreeSHA = "a4a3bc8c0f4e37695a4de3f51cd7123bc186043b"
+const upstreamTreeSHA = "575c641fbf8c0f133cb28e1e14a270b327b69c00ca58306e09a3e15adee73190"

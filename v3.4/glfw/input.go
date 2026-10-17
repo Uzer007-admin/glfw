@@ -3,6 +3,7 @@ package glfw
 //#include <stdlib.h>
 //#define GLFW_INCLUDE_NONE
 //#include "glfw/include/GLFW/glfw3.h"
+//#include "native_array.h"
 //void glfwSetJoystickCallbackCB();
 //void glfwSetKeyCallbackCB(GLFWwindow *window);
 //void glfwSetCharCallbackCB(GLFWwindow *window);
@@ -455,7 +456,14 @@ func (w *Window) GetKey(key Key) Action {
 // If the key is glfw.KeyUnknown, the scancode is used, otherwise the scancode is ignored.
 func GetKeyName(key Key, scancode int) string {
 	ret := C.glfwGetKeyName(C.int(key), C.int(scancode))
-	panicError()
+	if key == KeyUnknown {
+		// External media/fn scancodes may have no printable GLFW name.
+		if err := acceptError(invalidValue); err != nil {
+			return ""
+		}
+	} else {
+		panicError()
+	}
 	return C.GoString(ret)
 }
 
@@ -769,18 +777,15 @@ func (joy Joystick) Present() bool {
 //
 // This function must only be called from the main thread.
 func (joy Joystick) GetAxes() []float32 {
-	var length int
+	return joy.GetAxesInto(nil)
+}
 
-	axis := C.glfwGetJoystickAxes(C.int(joy), (*C.int)(unsafe.Pointer(&length)))
-	if axis == nil {
-		return nil
-	}
-
-	a := make([]float32, length)
-	for i := 0; i < length; i++ {
-		a[i] = float32(C.GetAxisAtIndex(axis, C.int(i)))
-	}
-	return a
+// GetAxesInto copies the joystick state into dst, reusing its capacity.
+// The returned slice owns its data; it does not borrow GLFW's internal memory.
+// It returns nil if the joystick is absent. Call only from the main thread.
+func (joy Joystick) GetAxesInto(dst []float32) []float32 {
+	result := C.glfwGetJoystickAxesBridge(C.int(joy))
+	return copyNativeSlice[float32](dst, unsafe.Pointer(result.data), int(result.count))
 }
 
 // GetButtons returns the state of all buttons of the specified joystick. Each
@@ -798,21 +803,15 @@ func (joy Joystick) GetAxes() []float32 {
 //
 // This function must only be called from the main thread.
 func (joy Joystick) GetButtons() []Action {
-	var length int
+	return joy.GetButtonsInto(nil)
+}
 
-	buttons := C.glfwGetJoystickButtons(
-		C.int(joy),
-		(*C.int)(unsafe.Pointer(&length)),
-	)
-	if buttons == nil {
-		return nil
-	}
-
-	b := make([]Action, length)
-	for i := 0; i < length; i++ {
-		b[i] = Action(C.GetButtonsAtIndex(buttons, C.int(i)))
-	}
-	return b
+// GetButtonsInto copies the joystick state into dst, reusing its capacity.
+// The returned slice owns its data; it does not borrow GLFW's internal memory.
+// It returns nil if the joystick is absent. Call only from the main thread.
+func (joy Joystick) GetButtonsInto(dst []Action) []Action {
+	result := C.glfwGetJoystickButtonsBridge(C.int(joy))
+	return copyNativeBytes[Action](dst, unsafe.Pointer(result.data), int(result.count))
 }
 
 // GetHats returns the state of all hats of the specified joystick.
@@ -823,18 +822,15 @@ func (joy Joystick) GetButtons() []Action {
 //
 // This function must only be called from the main thread.
 func (joy Joystick) GetHats() []JoystickHatState {
-	var length int
+	return joy.GetHatsInto(nil)
+}
 
-	hats := C.glfwGetJoystickHats(C.int(joy), (*C.int)(unsafe.Pointer(&length)))
-	if hats == nil {
-		return nil
-	}
-
-	b := make([]JoystickHatState, length)
-	for i := 0; i < length; i++ {
-		b[i] = JoystickHatState(C.GetButtonsAtIndex(hats, C.int(i)))
-	}
-	return b
+// GetHatsInto copies the joystick state into dst, reusing its capacity.
+// The returned slice owns its data; it does not borrow GLFW's internal memory.
+// It returns nil if the joystick is absent. Call only from the main thread.
+func (joy Joystick) GetHatsInto(dst []JoystickHatState) []JoystickHatState {
+	result := C.glfwGetJoystickHatsBridge(C.int(joy))
+	return copyNativeBytes[JoystickHatState](dst, unsafe.Pointer(result.data), int(result.count))
 }
 
 // GetName returns the name, encoded as UTF-8, of the specified joystick.
@@ -956,23 +952,29 @@ func (joy Joystick) GetGamepadName() string {
 //
 // This function must only be called from the main thread.
 func (joy Joystick) GetGamepadState() *GamepadState {
-	var (
-		gs  GamepadState
-		cgs C.GLFWgamepadstate
-	)
-
-	ret := C.glfwGetGamepadState(C.int(joy), &cgs)
-	if ret == C.GLFW_FALSE {
+	state := new(GamepadState)
+	if !joy.GetGamepadStateInto(state) {
 		return nil
 	}
+	return state
+}
 
-	for i := 0; i < 15; i++ {
-		gs.Buttons[i] = Action(C.GetGamepadButtonAtIndex(&cgs, C.int(i)))
+// GetGamepadStateInto copies a mapped gamepad's state into state without
+// allocating a result. It returns false if the joystick is absent or unmapped;
+// in that case state is unchanged. Call only from the main thread.
+func (joy Joystick) GetGamepadStateInto(state *GamepadState) bool {
+	if state == nil {
+		panic(&Error{Code: invalidValue, Desc: "nil gamepad state"})
 	}
-
-	for i := 0; i < 6; i++ {
-		gs.Axes[i] = float32(C.GetGamepadAxisAtIndex(&cgs, C.int(i)))
+	result := C.glfwGetGamepadStateBridge(C.int(joy))
+	if result.present == C.GLFW_FALSE {
+		return false
 	}
-
-	return &gs
+	for i, button := range result.state.buttons {
+		state.Buttons[i] = Action(button)
+	}
+	for i, axis := range result.state.axes {
+		state.Axes[i] = float32(axis)
+	}
+	return true
 }

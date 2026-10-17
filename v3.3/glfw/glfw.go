@@ -33,7 +33,12 @@ const (
 //
 // This function may only be called from the main thread.
 func Init() error {
-	C.glfwInit()
+	if C.glfwInit() == C.GLFW_FALSE {
+		if err := acceptError(APIUnavailable, platformError); err != nil {
+			return err
+		}
+		return &Error{Code: platformError, Desc: "GLFW завершил инициализацию с ошибкой без описания"}
+	}
 	return acceptError(APIUnavailable)
 }
 
@@ -50,6 +55,11 @@ func Init() error {
 func Terminate() {
 	flushErrors()
 	C.glfwTerminate()
+	fMonitorHolder = nil
+	fJoystickHolder = nil
+	windows.l.Lock()
+	clear(windows.m)
+	windows.l.Unlock()
 }
 
 // InitHint function sets hints for the next initialization of GLFW.
