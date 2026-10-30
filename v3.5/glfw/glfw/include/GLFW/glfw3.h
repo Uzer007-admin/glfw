@@ -1994,6 +1994,9 @@ typedef void (* GLFWdropfun)(GLFWwindow* window, int path_count, const char* pat
  */
 typedef void (* GLFWmonitorfun)(GLFWmonitor* monitor, int event);
 
+/* Granio extension: completed native display configuration notification. */
+typedef void (* GLFWmonitorconfigfun)(void);
+
 /*! @brief The function pointer type for joystick configuration callbacks.
  *
  *  This is the function pointer type for joystick configuration callbacks.
@@ -2836,6 +2839,11 @@ GLFWAPI void* glfwGetMonitorUserPointer(GLFWmonitor* monitor);
  *  @ingroup monitor
  */
 GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun callback);
+
+/* Granio extension. Main-thread-only, initialized GLFW required. The callback
+ * signals hotplug and mode changes. Query display settings after processing
+ * events, since a configuration change may generate several notifications. */
+GLFWAPI GLFWmonitorconfigfun glfwSetMonitorConfigurationCallback(GLFWmonitorconfigfun callback);
 
 /*! @brief Returns the available video modes for the specified monitor.
  *

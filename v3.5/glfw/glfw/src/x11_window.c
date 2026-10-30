@@ -1175,6 +1175,7 @@ static void processEvent(XEvent *event)
         {
             XRRUpdateConfiguration(event);
             _glfwPollMonitorsX11();
+            _glfwInputMonitorConfiguration();
             return;
         }
     }

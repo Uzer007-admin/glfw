@@ -878,6 +878,7 @@ struct _GLFWlibrary
 
     struct {
         GLFWmonitorfun  monitor;
+        GLFWmonitorconfigfun monitorConfiguration;
         GLFWjoystickfun joystick;
     } callbacks;
 
@@ -949,6 +950,7 @@ void _glfwInputJoystickButton(_GLFWjoystick* js, int button, char value);
 void _glfwInputJoystickHat(_GLFWjoystick* js, int hat, char value);
 
 void _glfwInputMonitor(_GLFWmonitor* monitor, int action, int placement);
+void _glfwInputMonitorConfiguration(void);
 void _glfwInputMonitorWindow(_GLFWmonitor* monitor, _GLFWwindow* window);
 
 #if defined(__GNUC__)

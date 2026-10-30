@@ -65,6 +65,7 @@ func Terminate() {
 	flushErrors()
 	C.glfwTerminate()
 	fMonitorHolder = nil
+	fMonitorConfigurationHolder = nil
 	fJoystickHolder = nil
 	windows.l.Lock()
 	clear(windows.m)

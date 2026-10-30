@@ -754,7 +754,7 @@ static GLFWbool initExtensions(void)
     if (_glfw.x11.randr.available && !_glfw.x11.randr.monitorBroken)
     {
         XRRSelectInput(_glfw.x11.display, _glfw.x11.root,
-                       RROutputChangeNotifyMask);
+                       RROutputChangeNotifyMask | RRCrtcChangeNotifyMask);
     }
 
 #if defined(__CYGWIN__)

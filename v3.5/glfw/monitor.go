@@ -6,6 +6,7 @@ package glfw
 //GLFWmonitor* GetMonitorAtIndex(GLFWmonitor **monitors, int index);
 //GLFWvidmode GetVidmodeAtIndex(GLFWvidmode *vidmodes, int index);
 //void glfwSetMonitorCallbackCB();
+//void glfwSetMonitorConfigurationCallbackCB();
 //void glfwSetGammaRampBridge(GLFWmonitor *monitor, unsigned short *red, unsigned short *green, unsigned short *blue, unsigned int size);
 //unsigned int GetGammaAtIndex(unsigned short *color, int i);
 //void SetGammaAtIndex(unsigned short *color, int i, unsigned short value);
@@ -48,6 +49,14 @@ type VidMode struct {
 }
 
 var fMonitorHolder func(monitor *Monitor, event PeripheralEvent)
+var fMonitorConfigurationHolder func()
+
+//export goMonitorConfigurationCB
+func goMonitorConfigurationCB() {
+	if fMonitorConfigurationHolder != nil {
+		fMonitorConfigurationHolder()
+	}
+}
 
 //export goMonitorCB
 func goMonitorCB(monitor unsafe.Pointer, event C.int) {
@@ -183,6 +192,24 @@ func SetMonitorCallback(cbfun MonitorCallback) MonitorCallback {
 	} else {
 		C.glfwSetMonitorCallbackCB()
 	}
+	return previous
+}
+
+// SetMonitorConfigurationCallback observes completed display configuration
+// changes, including refresh-rate changes without monitor hotplug. This Granio
+// extension is separate from the standard connection/disconnection callback.
+// Notifications can be coalesced: query monitors after event processing, not
+// from inside this callback. Call only from the main thread after Init.
+// A nil callback disables notifications; the previous callback is returned.
+func SetMonitorConfigurationCallback(cbfun func()) func() {
+	previous := fMonitorConfigurationHolder
+	fMonitorConfigurationHolder = cbfun
+	if cbfun == nil {
+		C.glfwSetMonitorConfigurationCallback(nil)
+	} else {
+		C.glfwSetMonitorConfigurationCallbackCB()
+	}
+	panicError()
 	return previous
 }
 

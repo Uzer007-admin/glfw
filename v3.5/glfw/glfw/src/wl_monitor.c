@@ -101,7 +101,10 @@ static void outputHandleDone(void* userData, struct wl_output* output)
     for (int i = 0; i < _glfw.monitorCount; i++)
     {
         if (_glfw.monitors[i] == monitor)
+        {
+            _glfwInputMonitorConfiguration();
             return;
+        }
     }
 
     _glfwInputMonitor(monitor, GLFW_CONNECTED, _GLFW_INSERT_LAST);

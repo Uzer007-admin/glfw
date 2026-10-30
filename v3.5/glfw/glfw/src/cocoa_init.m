@@ -416,6 +416,7 @@ static GLFWbool initializeTIS(void)
     }
 
     _glfwPollMonitorsCocoa();
+    _glfwInputMonitorConfiguration();
 }
 
 - (void)applicationWillFinishLaunching:(NSNotification *)notification

@@ -150,6 +150,15 @@ void _glfwInputMonitor(_GLFWmonitor* monitor, int action, int placement)
 
     if (action == GLFW_DISCONNECTED)
         _glfwFreeMonitor(monitor);
+
+    _glfwInputMonitorConfiguration();
+}
+
+// Granio extension: notify without querying display modes on the event path.
+void _glfwInputMonitorConfiguration(void)
+{
+    if (_glfw.callbacks.monitorConfiguration)
+        _glfw.callbacks.monitorConfiguration();
 }
 
 // Notifies shared code that a full screen window has acquired or released
@@ -427,6 +436,13 @@ GLFWAPI GLFWmonitorfun glfwSetMonitorCallback(GLFWmonitorfun cbfun)
 {
     _GLFW_REQUIRE_INIT_OR_RETURN(NULL);
     _GLFW_SWAP(GLFWmonitorfun, _glfw.callbacks.monitor, cbfun);
+    return cbfun;
+}
+
+GLFWAPI GLFWmonitorconfigfun glfwSetMonitorConfigurationCallback(GLFWmonitorconfigfun cbfun)
+{
+    _GLFW_REQUIRE_INIT_OR_RETURN(NULL);
+    _GLFW_SWAP(GLFWmonitorconfigfun, _glfw.callbacks.monitorConfiguration, cbfun);
     return cbfun;
 }
 
