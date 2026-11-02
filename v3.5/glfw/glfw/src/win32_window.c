@@ -374,6 +374,10 @@ static void updateFramebufferTransparency(const _GLFWwindow* window)
     BOOL composition, opaque;
     DWORD color;
 
+    // DirectComposition owns alpha on these surfaces; redirection blur is unused.
+    if (GetWindowLongW(window->win32.handle, GWL_EXSTYLE) & 0x00200000)
+        return;
+
     if (FAILED(DwmIsCompositionEnabled(&composition)) || !composition)
        return;
 
@@ -1278,6 +1282,9 @@ static int createNativeWindow(_GLFWwindow* window,
     WCHAR* wideTitle;
     DWORD style = getWindowStyle(window);
     DWORD exStyle = getWindowExStyle(window);
+
+    if (wndconfig->win32.noRedirectionBitmap)
+        exStyle |= 0x00200000; // WS_EX_NOREDIRECTIONBITMAP (Windows 8+)
 
     if (!_glfw.win32.mainWindowClass)
     {

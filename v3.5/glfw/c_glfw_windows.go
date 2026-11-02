@@ -8,6 +8,7 @@ package glfw
 #include "glfw/src/win32_monitor.c"
 #include "glfw/src/win32_time.c"
 #include "glfw/src/win32_thread.c"
+// Alpha DirectComposition не включает старый WGL blur-behind.
 #include "glfw/src/win32_window.c"
 #include "glfw/src/win32_module.c"
 #include "glfw/src/wgl_context.c"

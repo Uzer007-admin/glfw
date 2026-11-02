@@ -18,6 +18,13 @@ X11/RandR, Wayland и Cocoa. Они позволяют обновлять кеш
 без периодического обращения к настройкам всех дисплеев. Это расширение
 форка; стандартный `SetMonitorCallback` сохраняет прежний контракт.
 
+В `v3.5/glfw` доступен `Win32NoRedirectionBitmap`: параметр создаёт HWND для
+GPU-композиции DirectComposition без непрозрачной redirection surface. Он
+задаётся до `CreateWindow`, сбрасывается через `DefaultWindowHints` и игнорируется
+на других платформах. Владелец окна должен предоставить composition content;
+сам параметр не создаёт swap chain. Granio использует его для прозрачных окон,
+Mica, Mica Alt и Desktop Acrylic. [Контракт и проверки](https://github.com/Uzer007-admin/granio/blob/dev/granio/docs/WINDOWS_DIRECTCOMPOSITION.md).
+
 ---
 
 ## Документация исходного проекта и прежних этапов

@@ -68,24 +68,25 @@ const (
 
 // Window related hints/attributes.
 const (
-	Focused                Hint = C.GLFW_FOCUSED                 // Specifies whether the window will be given input focus when created. This hint is ignored for full screen and initially hidden windows.
-	Iconified              Hint = C.GLFW_ICONIFIED               // Specifies whether the window will be minimized.
-	Maximized              Hint = C.GLFW_MAXIMIZED               // Specifies whether the window is maximized.
-	Visible                Hint = C.GLFW_VISIBLE                 // Specifies whether the window will be initially visible.
-	Hovered                Hint = C.GLFW_HOVERED                 // Specifies whether the cursor is currently directly over the content area of the window, with no other windows between. See Cursor enter/leave events for details.
-	Resizable              Hint = C.GLFW_RESIZABLE               // Specifies whether the window will be resizable by the user.
-	Decorated              Hint = C.GLFW_DECORATED               // Specifies whether the window will have window decorations such as a border, a close widget, etc.
-	Floating               Hint = C.GLFW_FLOATING                // Specifies whether the window will be always-on-top.
-	AutoIconify            Hint = C.GLFW_AUTO_ICONIFY            // Specifies whether fullscreen windows automatically iconify (and restore the previous video mode) on focus loss.
-	CenterCursor           Hint = C.GLFW_CENTER_CURSOR           // Specifies whether the cursor should be centered over newly created full screen windows. This hint is ignored for windowed mode windows.
-	TransparentFramebuffer Hint = C.GLFW_TRANSPARENT_FRAMEBUFFER // Specifies whether the framebuffer should be transparent.
-	FocusOnShow            Hint = C.GLFW_FOCUS_ON_SHOW           // Specifies whether the window will be given input focus when glfwShowWindow is called.
-	ScaleToMonitor         Hint = C.GLFW_SCALE_TO_MONITOR        // Specified whether the window content area should be resized based on the monitor content scale of any monitor it is placed on. This includes the initial placement when the window is created.
-	MousePassthrough       Hint = C.GLFW_MOUSE_PASSTHROUGH       // Specifies whether the window is transparent to mouse input, letting any mouse events pass through to whatever window is behind it.
-	PositionX              Hint = C.GLFW_POSITION_X              // Specifies the desired x-coordinate of the upper-left corner of the content area of the window.
-	PositionY              Hint = C.GLFW_POSITION_Y              // Specifies the desired y-coordinate of the upper-left corner of the content area of the window.
-	Win32KeyboardMenu      Hint = C.GLFW_WIN32_KEYBOARD_MENU     // Specifies whether to let Alt+Space open the window menu on Win32.
-	Win32ShowDefault       Hint = C.GLFW_WIN32_SHOWDEFAULT       // Specifies the window show state for Win32.
+	Focused                  Hint = C.GLFW_FOCUSED                     // Specifies whether the window will be given input focus when created. This hint is ignored for full screen and initially hidden windows.
+	Iconified                Hint = C.GLFW_ICONIFIED                   // Specifies whether the window will be minimized.
+	Maximized                Hint = C.GLFW_MAXIMIZED                   // Specifies whether the window is maximized.
+	Visible                  Hint = C.GLFW_VISIBLE                     // Specifies whether the window will be initially visible.
+	Hovered                  Hint = C.GLFW_HOVERED                     // Specifies whether the cursor is currently directly over the content area of the window, with no other windows between. See Cursor enter/leave events for details.
+	Resizable                Hint = C.GLFW_RESIZABLE                   // Specifies whether the window will be resizable by the user.
+	Decorated                Hint = C.GLFW_DECORATED                   // Specifies whether the window will have window decorations such as a border, a close widget, etc.
+	Floating                 Hint = C.GLFW_FLOATING                    // Specifies whether the window will be always-on-top.
+	AutoIconify              Hint = C.GLFW_AUTO_ICONIFY                // Specifies whether fullscreen windows automatically iconify (and restore the previous video mode) on focus loss.
+	CenterCursor             Hint = C.GLFW_CENTER_CURSOR               // Specifies whether the cursor should be centered over newly created full screen windows. This hint is ignored for windowed mode windows.
+	TransparentFramebuffer   Hint = C.GLFW_TRANSPARENT_FRAMEBUFFER     // Specifies whether the framebuffer should be transparent.
+	FocusOnShow              Hint = C.GLFW_FOCUS_ON_SHOW               // Specifies whether the window will be given input focus when glfwShowWindow is called.
+	ScaleToMonitor           Hint = C.GLFW_SCALE_TO_MONITOR            // Specified whether the window content area should be resized based on the monitor content scale of any monitor it is placed on. This includes the initial placement when the window is created.
+	MousePassthrough         Hint = C.GLFW_MOUSE_PASSTHROUGH           // Specifies whether the window is transparent to mouse input, letting any mouse events pass through to whatever window is behind it.
+	PositionX                Hint = C.GLFW_POSITION_X                  // Specifies the desired x-coordinate of the upper-left corner of the content area of the window.
+	PositionY                Hint = C.GLFW_POSITION_Y                  // Specifies the desired y-coordinate of the upper-left corner of the content area of the window.
+	Win32KeyboardMenu        Hint = C.GLFW_WIN32_KEYBOARD_MENU         // Specifies whether to let Alt+Space open the window menu on Win32.
+	Win32ShowDefault         Hint = C.GLFW_WIN32_SHOWDEFAULT           // Specifies the window show state for Win32.
+	Win32NoRedirectionBitmap Hint = C.GLFW_WIN32_NO_REDIRECTION_BITMAP // Creates a Win32 DirectComposition surface without a DWM redirection bitmap. Ignored on other platforms.
 )
 
 // Context related hints.
